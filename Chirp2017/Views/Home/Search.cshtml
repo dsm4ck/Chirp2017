@@ -1,0 +1,23 @@
+﻿@model List<Chirp2017.Models.TweetInfo>
+
+<title>Results</title>
+@if(Model == null || Model.Count < 1)
+{
+    <br />
+    <span>no results found</span>
+}
+else
+{
+
+    foreach (var item in Model)
+    {
+        <ul>
+            <li>
+                @Html.DisplayFor(modelItem => item.Author) @Html.DisplayFor(modelItem => item.TweetString)
+            </li>
+            <li>
+                @Html.DisplayFor(modelItem => item.timeStamp)
+            </li>
+        </ul>
+    }
+}
