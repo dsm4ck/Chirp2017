@@ -17,7 +17,7 @@ namespace Chirp2017.Controllers
         }
 
         [HttpPost]
-        public ActionResult Search(SearchData data)
+        public ActionResult Search(SearchPageModel data)
         {
             var appSettings = ConfigurationManager.AppSettings;
 
@@ -38,11 +38,11 @@ namespace Chirp2017.Controllers
             service.TraceEnabled = true;
             SearchOptions options = new SearchOptions();
             options.Lang = "en";
-            options.Count = data.myNumber > 0 ? data.myNumber : 10;
-            var searchString = "from:" + data.myUserName;
-            if (!String.IsNullOrWhiteSpace(data.myKeyword))
+            options.Count = data.searchData.myNumber > 0 ? data.searchData.myNumber : 10;
+            var searchString = "from:" + data.searchData.myUserName;
+            if (!String.IsNullOrWhiteSpace(data.searchData.myKeyword))
             {
-                searchString += " " + data.myKeyword;
+                searchString += " " + data.searchData.myKeyword;
             }
             //“37.781157,-122.398720,1mi”
             //var split = data.myLocation.Split(',');
@@ -66,12 +66,12 @@ namespace Chirp2017.Controllers
             {
                 //looks like tweetsharp has an overflow issue http://stackoverflow.com/q/19669609
                 //play it cool
-                return View();
+                return View(new SearchPageModel() { searchData = data.searchData });
             }
             if (tweets == null)
             {
                 //no results broh
-                return View();
+                return View(new SearchPageModel() { searchData = data.searchData });
             }
 
             var simplerResults = new List<TweetInfo>();
@@ -80,12 +80,12 @@ namespace Chirp2017.Controllers
                 simplerResults.Add(new Models.TweetInfo
                 {
                     Author = t.Author.ScreenName
-                    ,timeStamp = t.CreatedDate
+                    ,timeStamp = t.CreatedDate.ToLocalTime() //to display time in server time, not UTC
                     ,TweetString = t.Text
                 });
             }
 
-            return View(simplerResults);
+            return View(new SearchPageModel() { searchData = data.searchData, tweets = simplerResults });
         }
 
         public ActionResult About()

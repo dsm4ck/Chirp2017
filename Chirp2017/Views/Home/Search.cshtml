@@ -1,23 +1,38 @@
-﻿@model List<Chirp2017.Models.TweetInfo>
-
-<title>Results</title>
-@if(Model == null || Model.Count < 1)
+﻿@model Chirp2017.Models.SearchPageModel
+<br />
+@using (Html.BeginForm("Search", "Home", FormMethod.Post))
 {
-    <br />
+    <span>UserName:</span>
+    @Html.TextBoxFor(m => m.searchData.myUserName)
+    <span>Number:</span>
+    @Html.TextBoxFor(m => m.searchData.myNumber)
+    <span>keyword:</span>
+    @Html.TextBoxFor(m => m.searchData.myKeyword)
+    <span>location:</span>
+    @Html.TextBoxFor(m => m.searchData.myLocation)
+    <input type="submit" value="Submit" />
+}   
+
+<title>Results</title><br />
+@if(Model?.tweets == null || Model.tweets.Count < 1)
+{
+    
     <span>no results found</span>
 }
 else
 {
 
-    foreach (var item in Model)
+    foreach (var item in Model.tweets)
     {
-        <ul>
-            <li>
-                @Html.DisplayFor(modelItem => item.Author) @Html.DisplayFor(modelItem => item.TweetString)
-            </li>
-            <li>
-                @Html.DisplayFor(modelItem => item.timeStamp)
-            </li>
-        </ul>
+        <p>
+            <ul>
+                <li>
+                    <Strong>@Html.DisplayFor(modelItem => item.Author)</Strong>: @Html.DisplayFor(modelItem => item.TweetString)
+                </li>
+                <li>
+                    @Html.DisplayFor(modelItem => item.timeStamp)
+                </li>
+            </ul>
+        </p>
     }
 }
