@@ -28,6 +28,7 @@ namespace Chirp2017.Controllers
             {
                 throw new Exception("please add API keys to app settings");
             }
+
             var consumerKey = appSettings["TwitterAppKey"];
             var consumerSecret = appSettings["TwitterAppSecret"];
             TwitterService service = new TwitterService(consumerKey, consumerSecret);
@@ -35,28 +36,30 @@ namespace Chirp2017.Controllers
             var personalToken = appSettings["TwitterPersonalToken"];
             var personalSecret = appSettings["TwitterPersonalSecret"];
             service.AuthenticateWith(personalToken, personalSecret);
+
             service.TraceEnabled = true;
+
             SearchOptions options = new SearchOptions();
             options.Lang = "en";
             options.Count = data.searchData.myNumber > 0 ? data.searchData.myNumber : 10;
-            var searchString = "from:" + data.searchData.myUserName;
+            var searchString = String.IsNullOrWhiteSpace(data.searchData.myUserName) ? "" : "from:" + data.searchData.myUserName;
             if (!String.IsNullOrWhiteSpace(data.searchData.myKeyword))
             {
                 searchString += " " + data.searchData.myKeyword;
             }
-            //“37.781157,-122.398720,1mi”
-            //var split = data.myLocation.Split(',');
-            //double lat;
-            //double lng;
-            //int radius = 5;
-            //if(split.Length == 3 && double.TryParse()
-            //{
-            //    options.Geocode = new TwitterGeoLocationSearch((double)split[0],(double)split[1],(int)split[3]);
-            //}
-            
+
+            //“37.781157,-122.398720”
+            var split = data.searchData.myLocation.Split(',');
+            double lat = 0;
+            double lng = 0;
+            int radius = 5;
+            if(split.Length == 2 && double.TryParse(split[0], out lat) && double.TryParse(split[1], out lng))
+            {
+                options.Geocode = new TwitterGeoLocationSearch(lat, lng, radius, TwitterGeoLocationSearch.RadiusType.Km);
+            }
+
             options.Q = searchString;
             options.Resulttype = TwitterSearchResultType.Popular;
-            options.IncludeEntities = false;
             TwitterSearchResult tweets;
             try
             {
@@ -70,8 +73,15 @@ namespace Chirp2017.Controllers
             }
             if (tweets == null)
             {
-                //no results broh
-                return View(new SearchPageModel() { searchData = data.searchData });
+                //no results broh, check if username is invalid if we can
+                TwitterUser tweeter = new TwitterUser();//if no username was provided don't mark as invalid
+                if (!String.IsNullOrEmpty(data.searchData.myUserName))
+                {
+                    //call here to avoid slowing down valid requests
+                    tweeter = service.GetUserProfileFor(new GetUserProfileForOptions() { ScreenName = data.searchData.myUserName });
+                }
+
+                return View(new SearchPageModel() { searchData = data.searchData, usernameValid = tweeter != null });
             }
 
             var simplerResults = new List<TweetInfo>();

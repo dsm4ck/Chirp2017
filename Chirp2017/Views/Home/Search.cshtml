@@ -8,16 +8,23 @@
     @Html.TextBoxFor(m => m.searchData.myNumber)
     <span>keyword:</span>
     @Html.TextBoxFor(m => m.searchData.myKeyword)
-    <span>location:</span>
+    <span>location(lat,long):</span>
     @Html.TextBoxFor(m => m.searchData.myLocation)
     <input type="submit" value="Submit" />
 }   
 
 <title>Results</title><br />
+
 @if(Model?.tweets == null || Model.tweets.Count < 1)
 {
-    
+    if (Model.usernameValid)
+    {
     <span>no results found</span>
+    }
+    else
+    {
+        <div class="text-danger"> User: @Html.DisplayFor(Model => Model.searchData.myUserName) does not exist </div>
+    }
 }
 else
 {
