@@ -9,6 +9,6 @@ namespace Chirp2017.Models
     {
         public SearchData searchData { get; set; }
         public List<Chirp2017.Models.TweetInfo> tweets {get;set;}
-        public bool usernameValid { get; set; } = true;
+        public string errorMessage { get; set; }
     }
 }

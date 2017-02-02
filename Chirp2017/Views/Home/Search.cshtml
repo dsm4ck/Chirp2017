@@ -15,28 +15,21 @@
 
 <title>Results</title><br />
 
-@if(Model?.tweets == null || Model.tweets.Count < 1)
-{
-    if (Model.usernameValid)
+    @if (!String.IsNullOrEmpty(Model.errorMessage))
     {
-    <span>no results found</span>
+        <div class="text-danger">@Model.errorMessage</div>
+    }
+
+    else if (Model.tweets == null || Model.tweets.Count == 0)
+    {
+        <span> no results found</span>
+
     }
     else
     {
-        <div class="text-danger"> User: @Html.DisplayFor(Model => Model.searchData.myUserName) does not exist </div>
+        foreach (var item in Model.tweets)
+        {
+            <p> <Strong>@Html.DisplayFor(modelItem => item.Author) : </Strong> @Html.DisplayFor(modelItem => item.timeStamp) </p>
+        <p>@Html.DisplayFor(modelItem => item.TweetString)  </p>
+        }
     }
-}
-else
-{
-
-    foreach (var item in Model.tweets)
-    {
-        <p>
-            <Strong>@Html.DisplayFor(modelItem => item.Author)</Strong>: @Html.DisplayFor(modelItem => item.timeStamp)
-        </p>
-<p>
-    @Html.DisplayFor(modelItem => item.TweetString)
-</p>
-
-    }
-}

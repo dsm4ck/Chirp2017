@@ -26,7 +26,7 @@ namespace Chirp2017.Controllers
 
             SearchOptions options = new SearchOptions();
             options.Lang = "en";
-            options.Count = data.searchData.myNumber > 0 ? data.searchData.myNumber : 10;
+            options.Count = Math.Max(data.searchData.myNumber,  0);
 
             //author
             var searchString = "from:" + (String.IsNullOrWhiteSpace(data.searchData.myUserName) ? "" : data.searchData.myUserName);
@@ -52,6 +52,7 @@ namespace Chirp2017.Controllers
 
             options.Q = searchString;
             options.IncludeEntities = true;
+            var err = "";
             TwitterSearchResult tweets;
             try
             {
@@ -66,15 +67,27 @@ namespace Chirp2017.Controllers
             if (tweets == null || tweets.Statuses.Count() == 0)
             {
                 //no results broh, check if username is invalid if we can
-                TwitterUser tweeter = new TwitterUser();//if no username was provided don't mark as invalid
                 bool userProvided = !String.IsNullOrEmpty(data.searchData.myUserName);
-                if (userProvided)
+                if (!String.IsNullOrEmpty(service?.Response?.Error?.Message)){
+                    if (service.Response.Error.Message.ToLower().Contains("auth"))
+                    {
+                        err = service?.Response?.Error?.Message + " Please check web config API keys";
+                    }else
+                    {
+                        err = service?.Response?.Error?.Message;
+                    }
+                }
+                else if (userProvided)
                 {
                     //call here to avoid slowing down valid requests
-                    tweeter = service.GetUserProfileFor(new GetUserProfileForOptions() { ScreenName = data.searchData.myUserName });
+                    var tweeter = service.GetUserProfileFor(new GetUserProfileForOptions() { ScreenName = data.searchData.myUserName });
+                    if (tweeter == null)
+                    {
+                        err = "User: " + data.searchData.myUserName + " does not exist";
+                    }
                 }
 
-                return View(new SearchPageModel() { searchData = data.searchData, usernameValid = !userProvided && tweeter != null });
+                return View(new SearchPageModel() { searchData = data.searchData, errorMessage = err });
             }
 
             var simplerResults = new List<TweetInfo>();
