@@ -32,14 +32,11 @@ else
     foreach (var item in Model.tweets)
     {
         <p>
-            <ul>
-                <li>
-                    <Strong>@Html.DisplayFor(modelItem => item.Author)</Strong>: @Html.DisplayFor(modelItem => item.TweetString)
-                </li>
-                <li>
-                    @Html.DisplayFor(modelItem => item.timeStamp)
-                </li>
-            </ul>
+            <Strong>@Html.DisplayFor(modelItem => item.Author)</Strong>: @Html.DisplayFor(modelItem => item.timeStamp)
         </p>
+<p>
+    @Html.DisplayFor(modelItem => item.TweetString)
+</p>
+
     }
 }

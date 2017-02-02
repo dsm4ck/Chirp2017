@@ -62,7 +62,8 @@ namespace Chirp2017.Controllers
             }
 
             options.Q = searchString;
-            options.Resulttype = TwitterSearchResultType.Popular;
+            options.IncludeEntities = true;
+            //options.Resulttype = TwitterSearchResultType.Mixed;
             TwitterSearchResult tweets;
             try
             {
@@ -74,7 +75,7 @@ namespace Chirp2017.Controllers
                 //play it cool
                 return View(new SearchPageModel() { searchData = data.searchData });
             }
-            if (tweets == null)
+            if (tweets == null || tweets.Statuses.Count() == 0)
             {
                 //no results broh, check if username is invalid if we can
                 TwitterUser tweeter = new TwitterUser();//if no username was provided don't mark as invalid
