@@ -19,60 +19,48 @@ namespace Chirp2017.Controllers
         [HttpPost]
         public ActionResult Search(SearchPageModel data)
         {
-            var appSettings = ConfigurationManager.AppSettings;
+            VerifyAPIKeys();
+            TwitterService service = SetUpSearchService();
 
-            if (String.IsNullOrEmpty(appSettings["TwitterAppKey"]) ||
-                String.IsNullOrEmpty(appSettings["TwitterAppSecret"]) ||
-                String.IsNullOrEmpty(appSettings["TwitterPersonalToken"]) ||
-                String.IsNullOrEmpty(appSettings["TwitterPersonalSecret"] ))
-            {
-                throw new Exception("please add API keys to app settings");
-            }
-
-            var consumerKey = appSettings["TwitterAppKey"];
-            var consumerSecret = appSettings["TwitterAppSecret"];
-            TwitterService service = new TwitterService(consumerKey, consumerSecret);
-
-            var personalToken = appSettings["TwitterPersonalToken"];
-            var personalSecret = appSettings["TwitterPersonalSecret"];
-            service.AuthenticateWith(personalToken, personalSecret);
-
-            service.TraceEnabled = true;
+            //service.TraceEnabled = true;
 
             SearchOptions options = new SearchOptions();
             options.Lang = "en";
             options.Count = data.searchData.myNumber > 0 ? data.searchData.myNumber : 10;
+
+            //author
             var searchString = "from:" + (String.IsNullOrWhiteSpace(data.searchData.myUserName) ? "" : data.searchData.myUserName);
+
+            //subject
             if (!String.IsNullOrWhiteSpace(data.searchData.myKeyword))
             {
                 searchString += " " + data.searchData.myKeyword;
             }
 
-            //“37.781157,-122.398720”
+            //location “37.781157,-122.398720”
             if (!String.IsNullOrEmpty(data.searchData.myLocation))
             {
                 var split = data.searchData.myLocation.Split(',');
                 double lat = 0;
                 double lng = 0;
-                int radius = 5;
                 if (split.Length == 2 && double.TryParse(split[0], out lat) && double.TryParse(split[1], out lng))
                 {
+                    int radius = 5;
                     options.Geocode = new TwitterGeoLocationSearch(lat, lng, radius, TwitterGeoLocationSearch.RadiusType.Km);
                 }
             }
 
             options.Q = searchString;
             options.IncludeEntities = true;
-            //options.Resulttype = TwitterSearchResultType.Mixed;
             TwitterSearchResult tweets;
             try
             {
                 tweets = service.Search(options);
             }
-            catch(OverflowException e)
+            catch (OverflowException e)
             {
                 //looks like tweetsharp has an overflow issue http://stackoverflow.com/q/19669609
-                //play it cool
+                //play it cool- proper fix would be to branch source and make fix described here= http://stackoverflow.com/a/25018796
                 return View(new SearchPageModel() { searchData = data.searchData });
             }
             if (tweets == null || tweets.Statuses.Count() == 0)
@@ -90,17 +78,28 @@ namespace Chirp2017.Controllers
             }
 
             var simplerResults = new List<TweetInfo>();
-            foreach(var t in tweets.Statuses)
+            foreach (var t in tweets.Statuses)
             {
                 simplerResults.Add(new Models.TweetInfo
                 {
                     Author = t.Author.ScreenName
-                    ,timeStamp = t.CreatedDate.ToLocalTime() //to display time in server time, not UTC
+                    ,timeStamp = t.CreatedDate.ToLocalTime() //display time in server time, not UTC
                     ,TweetString = t.Text
                 });
             }
 
             return View(new SearchPageModel() { searchData = data.searchData, tweets = simplerResults });
+        }
+
+        private static TwitterService SetUpSearchService()
+        {
+            var appSettings = ConfigurationManager.AppSettings;
+            var consumerKey = appSettings["TwitterAppKey"];
+            var consumerSecret = appSettings["TwitterAppSecret"];
+            var personalToken = appSettings["TwitterPersonalToken"];
+            var personalSecret = appSettings["TwitterPersonalSecret"];
+            TwitterService service = new TwitterService(consumerKey, consumerSecret, personalToken, personalSecret);
+            return service;
         }
 
         public ActionResult About()
@@ -111,6 +110,19 @@ namespace Chirp2017.Controllers
         public ActionResult Contact()
         {
             return View();
+        }
+
+        private void VerifyAPIKeys()
+        {
+            var appSettings = ConfigurationManager.AppSettings;
+
+            if (String.IsNullOrEmpty(appSettings["TwitterAppKey"]) ||
+                String.IsNullOrEmpty(appSettings["TwitterAppSecret"]) ||
+                String.IsNullOrEmpty(appSettings["TwitterPersonalToken"]) ||
+                String.IsNullOrEmpty(appSettings["TwitterPersonalSecret"]))
+            {
+                throw new Exception("please add API keys to app settings");
+            }
         }
     }
 }
