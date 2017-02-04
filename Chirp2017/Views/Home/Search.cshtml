@@ -3,13 +3,13 @@
 @using (Html.BeginForm("Search", "Home", FormMethod.Post))
 {
     <span>UserName:</span>
-    @Html.TextBoxFor(m => m.searchData.myUserName)
+    @Html.TextBoxFor(m => m.searchData.myUserName, new { type = "search" })
     <span>Number:</span>
-    @Html.TextBoxFor(m => m.searchData.myNumber)
-    <span>keyword:</span>
-    @Html.TextBoxFor(m => m.searchData.myKeyword)
-    <span>location(lat,long):</span>
-    @Html.TextBoxFor(m => m.searchData.myLocation)
+    @Html.TextBoxFor(m => m.searchData.myNumber, new { type = "number" })
+    <span>Keyword:</span>
+    @Html.TextBoxFor(m => m.searchData.myKeyword, new { type = "search" })
+    <span>Location(lat,long):</span>
+    @Html.TextBoxFor(m => m.searchData.myLocation, new { type = "search" })
     <input type="submit" value="Submit" />
 }   
 
