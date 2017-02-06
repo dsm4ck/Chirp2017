@@ -52,18 +52,14 @@ namespace Chirp2017.Controllers
 
             options.Q = searchString;
             options.IncludeEntities = true;
+            options.Resulttype = TwitterSearchResultType.Recent;
+            options.Until = DateTime.Now;
+            options.IncludeEntities = false;
+            options.SinceId = 0;
             var err = "";
             TwitterSearchResult tweets;
-            try
-            {
-                tweets = service.Search(options);
-            }
-            catch (OverflowException e)
-            {
-                //looks like tweetsharp has an overflow issue http://stackoverflow.com/q/19669609
-                //play it cool- proper fix would be to branch source and make fix described here= http://stackoverflow.com/a/25018796
-                return View(new SearchPageModel() { searchData = data.searchData });
-            }
+            tweets = service.Search(options);
+
             if (tweets == null || tweets.Statuses.Count() == 0)
             {
                 //no results broh, check if username is invalid if we can

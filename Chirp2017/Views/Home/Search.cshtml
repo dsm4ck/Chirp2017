@@ -27,6 +27,7 @@
     }
     else
     {
+        @*<p>@Html.DisplayFor(Model => Model.tweets.Count)</p>*@
         foreach (var item in Model.tweets)
         {
             <p> <Strong>@Html.DisplayFor(modelItem => item.Author) : </Strong> @Html.DisplayFor(modelItem => item.timeStamp) </p>
