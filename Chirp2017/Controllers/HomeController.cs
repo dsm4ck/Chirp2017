@@ -27,6 +27,7 @@ namespace Chirp2017.Controllers
             SearchOptions options = new SearchOptions();
             options.Lang = "en";
             options.Count = Math.Max(data.searchData.myNumber,  0);
+            /*Keep in mind that the search index has a 7-day limit. In other words, no tweets will be found for a date older than one week. https://dev.twitter.com/rest/reference/get/search/tweets*/
 
             //author
             var searchString = "from:" + (String.IsNullOrWhiteSpace(data.searchData.myUserName) ? "" : data.searchData.myUserName);
